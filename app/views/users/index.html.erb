@@ -1,0 +1,25 @@
+USERS
+
+<table style="width:100%">
+  <tr>
+    <th>Name</th>
+    <th>Last name</th>
+    <th>User name</th>
+    <th>Email</th>
+    <th>Playlists</th>
+  </tr>
+  <% @users.each do |user| %>
+    <tr>
+      <td><%= user.first_name %></td>
+      <td><%= user.last_name %></td>
+      <td><%= user.user_name %></td>
+      <td><%= user.email %></td>
+
+      <% if user.play_lists.present? %>
+        <% user.play_lists.each do |playlist| %>
+          <td><%= playlist.name %></td>
+        <% end %>        
+      <% end %>
+    </tr>
+  <% end %>
+</table>
