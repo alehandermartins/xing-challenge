@@ -12,7 +12,7 @@ RSpec.describe Api::SessionsController, type: :controller do
 
     it "returns jwt valid token" do
       post :login, params: {email: user.email, password: user.password}
-      expect(response).to be_success
+      expect(response).to have_http_status(:ok)
       token = JSON.parse(response.body)['jwtToken']
       expect { JWT.decode(token, 'jwtSecret') }.to_not raise_error
     end

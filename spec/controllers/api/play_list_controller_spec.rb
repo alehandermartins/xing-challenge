@@ -21,7 +21,7 @@ RSpec.describe Api::PlayListsController, type: :controller do
 
     it 'returns a success response' do
       get :index
-      expect(response).to be_success
+      expect(response).to have_http_status(:ok)
     end
   end
 
@@ -34,7 +34,7 @@ RSpec.describe Api::PlayListsController, type: :controller do
 
     it 'returns a success response' do
       get :show, params: {id: play_list.id}
-      expect(response).to be_success
+      expect(response).to have_http_status(:ok)
     end
   end
 
@@ -146,7 +146,7 @@ RSpec.describe Api::PlayListsController, type: :controller do
 
     it 'returns a success response' do
       post :add_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
-      expect(response).to be_success
+      expect(response).to have_http_status(:ok)
     end
   end
 
@@ -182,7 +182,7 @@ RSpec.describe Api::PlayListsController, type: :controller do
 
     it 'returns a success response' do
       post :remove_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
-      expect(response).to be_success
+      expect(response).to have_http_status(:ok)
     end
   end
 end
