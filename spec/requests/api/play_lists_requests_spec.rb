@@ -4,11 +4,12 @@ RSpec.describe 'PlayLists', type: :request do
 
   let(:play_list) { create(:play_list) }
   let(:user) { play_list.user }
+  let(:headers) {{'ACCEPT' => "application/json", 'CONTENT_TYPE' => 'application/json'}}
 
   before(:each) do
-    post '/api/login', params: {email: user.email, password: user.password}
+    post '/api/login', params: {email: user.email, password: user.password}.to_json, headers: headers
     token = JSON.parse(response.body)['jwtToken']
-    @headers = {'ACCEPT' => "application/json", 'CONTENT_TYPE' => 'application/json', 'AUTHORIZATION' => 'Bearer ' + token}
+    headers['AUTHORIZATION'] = 'Bearer ' + token
   end
 
   def serialized_record record
@@ -18,7 +19,7 @@ RSpec.describe 'PlayLists', type: :request do
   describe 'GET /api/playlists' do
     it 'returns array of playlists' do
       new_playlist = create(:play_list, user: user)
-      get '/api/play_lists', headers: @headers
+      get '/api/play_lists', headers: headers
       result = JSON.parse(response.body)['play_lists']
       expect(result).to eq [serialized_record(play_list), serialized_record(new_playlist)]
     end
@@ -26,7 +27,7 @@ RSpec.describe 'PlayLists', type: :request do
 
   describe 'GET /api/play_lists/:id' do
     it 'returns play_list' do
-      get "/api/play_lists/#{user.id}", headers: @headers
+      get "/api/play_lists/#{user.id}", headers: headers
       result = JSON.parse(response.body)['play_list']
       expect(result).to eq serialized_record(play_list)
     end
@@ -38,7 +39,7 @@ RSpec.describe 'PlayLists', type: :request do
     }}
 
     before(:each) do
-      post '/api/play_lists', params: {play_list: valid_attributes}
+      post '/api/play_lists', params: {play_list: valid_attributes}.to_json, headers: headers
     end
 
     it 'renders a JSON response with the new play_list' do
@@ -55,7 +56,7 @@ RSpec.describe 'PlayLists', type: :request do
   describe 'PUT /api/play_lists/:id' do
     before(:each) do
       params = {play_list: {name: "new name"}}.to_json
-      put "/api/play_lists/#{play_list.id}", params: params, headers: @headers
+      put "/api/play_lists/#{play_list.id}", params: params, headers: headers
     end
 
     it 'renders a JSON response with the updated play_list' do
@@ -71,7 +72,7 @@ RSpec.describe 'PlayLists', type: :request do
 
   describe 'DELETE #destroy' do
     it 'deletes the record' do
-      delete "/api/play_lists/#{play_list.id}", headers: @headers
+      delete "/api/play_lists/#{play_list.id}", headers: headers
       expect{PlayList.find(play_list.id)}.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
@@ -81,7 +82,7 @@ RSpec.describe 'PlayLists', type: :request do
     let(:mp3) { create(:mp3) }
 
     it 'adds mp3 to play_list' do
-      post "/api/play_lists/#{play_list.id}/add_mp3", params: {mp3: { mp3_id: mp3.id}}
+      post "/api/play_lists/#{play_list.id}/add_mp3", params: {mp3: { mp3_id: mp3.id}}.to_json, headers: headers
       expect(play_list.mp3s.first).to eq(mp3)
     end
   end
@@ -91,7 +92,7 @@ RSpec.describe 'PlayLists', type: :request do
     let(:mp3) { create(:mp3) }
 
     it 'removes mp3 from play_list' do
-      post "/api/play_lists/#{play_list.id}/remove_mp3", params: {mp3: { mp3_id: mp3.id}}
+      post "/api/play_lists/#{play_list.id}/remove_mp3", params: {mp3: { mp3_id: mp3.id}}.to_json, headers: headers
       expect{play_list.mp3s.find(mp3.id)}.to raise_error(ActiveRecord::RecordNotFound)
     end
   end

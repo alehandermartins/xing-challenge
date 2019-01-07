@@ -3,11 +3,12 @@ require 'rails_helper'
 RSpec.describe 'Users', type: :request do
 
   let(:user)  { create(:user) }
+  let(:headers) {{'ACCEPT' => "application/json", 'CONTENT_TYPE' => 'application/json'}}
 
   before(:each) do
-    post '/api/login', params: {email: user.email, password: user.password}
+    post '/api/login', params: {email: user.email, password: user.password}.to_json, headers: headers
     token = JSON.parse(response.body)['jwtToken']
-    @headers = {'ACCEPT' => "application/json", 'CONTENT_TYPE' => 'application/json', 'AUTHORIZATION' => 'Bearer ' + token}
+    headers['AUTHORIZATION'] = 'Bearer ' + token
   end
 
   def serialized_record record
@@ -17,7 +18,7 @@ RSpec.describe 'Users', type: :request do
   describe 'GET /api/users' do
     it 'returns array of users' do
       new_user = create(:user)
-      get '/api/users', headers: @headers
+      get '/api/users', headers: headers
       result = JSON.parse(response.body)['users']
       expect(result).to eq [serialized_record(user), serialized_record(new_user)]
     end
@@ -25,7 +26,7 @@ RSpec.describe 'Users', type: :request do
 
   describe 'GET /api/users/:id' do
     it 'returns user' do
-      get "/api/users/#{user.id}", headers: @headers
+      get "/api/users/#{user.id}", headers: headers
       result = JSON.parse(response.body)['user']
       expect(result).to eq serialized_record(user)
     end
@@ -41,7 +42,7 @@ RSpec.describe 'Users', type: :request do
     }}
 
     before(:each) do
-      post '/api/users', params: {user: valid_attributes}
+      post '/api/users', params: {user: valid_attributes}.to_json, headers: headers
     end
 
     it 'renders a JSON response with the new user' do
@@ -64,7 +65,7 @@ RSpec.describe 'Users', type: :request do
   describe 'PUT /api/users/:id' do
     before(:each) do
       params = {user: {first_name: "new name", password: "password"}}.to_json
-      put "/api/users/#{user.id}", params: params, headers: @headers
+      put "/api/users/#{user.id}", params: params, headers: headers
     end
 
     it 'renders a JSON response with the updated user' do
@@ -80,7 +81,7 @@ RSpec.describe 'Users', type: :request do
 
   describe 'DELETE #destroy' do
     it 'deletes the record' do
-      delete "/api/users/#{user.id}", headers: @headers
+      delete "/api/users/#{user.id}", headers: headers
       expect{User.find(user.id)}.to raise_error(ActiveRecord::RecordNotFound)
     end
   end

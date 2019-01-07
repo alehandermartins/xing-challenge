@@ -4,6 +4,10 @@ RSpec.describe Api::SessionsController, type: :controller do
 
   let(:user) { create(:user) }
 
+  before(:each) {
+    request.headers['HTTP_ACCEPT'] = "application/json"
+  }
+
   describe "login" do
 
     it "returns jwt valid token" do

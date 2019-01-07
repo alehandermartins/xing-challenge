@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   root to: 'users#index'
 
-  namespace :api, defaults: {format: 'json'} do
+  namespace :api, constraints: { format: 'json' } do
     post 'login' => 'sessions#login'
     resources :users
     resources :play_lists do
