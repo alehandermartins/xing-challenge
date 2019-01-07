@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'shared/authentication'
 
 RSpec.describe Api::PlayListsController, type: :controller do
 
@@ -13,11 +14,8 @@ RSpec.describe Api::PlayListsController, type: :controller do
   }
 
   describe 'GET #index' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      get :index
-      expect(response).to have_http_status(:unauthorized)
-    end
+
+    it_behaves_like "needs authentication", :get, :index
 
     it 'returns a success response' do
       get :index
@@ -26,14 +24,12 @@ RSpec.describe Api::PlayListsController, type: :controller do
   end
 
   describe 'GET #show' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      get :show, params: {id: play_list.id}
-      expect(response).to have_http_status(:unauthorized)
-    end
+    
+    let(:params) {{id: play_list.id}}
+    it_behaves_like "needs authentication", :get, :show
 
     it 'returns a success response' do
-      get :show, params: {id: play_list.id}
+      get :show, params: params
       expect(response).to have_http_status(:ok)
     end
   end
@@ -60,7 +56,6 @@ RSpec.describe Api::PlayListsController, type: :controller do
         post :create, params: {play_list: valid_attributes}
 
         expect(response).to have_http_status(:created)
-        expect(response.content_type).to eq('application/json')
       end
     end
 
@@ -68,30 +63,25 @@ RSpec.describe Api::PlayListsController, type: :controller do
       it 'returns an unprocessable_entity response' do
         post :create, params: {play_list: {name: nil}}
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to eq('application/json')
       end
     end
   end
 
   describe 'PUT #update' do
-    it "returns invalid login without authentication" do
 
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      put :update, params: {id: user.id, play_list: { name: 'new name' }}
-      expect(response).to have_http_status(:unauthorized)
-    end
+    let(:params) {{id: user.id, play_list: { name: 'new name' }}}
+    it_behaves_like "needs authentication", :put, :update
 
     context 'with valid params' do
       it 'updates the requested play_list' do
-        put :update, params: {id: play_list.id, play_list: { name: 'new name' }}
+        put :update, params: params
         play_list.reload
         expect(play_list.name).to eq ('new name')
       end
 
       it 'returns a success response' do
-        put :update, params: {id: play_list.id, play_list: { name: 'new name' }}
+        put :update, params: params
         expect(response).to have_http_status(:ok)
-        expect(response.content_type).to eq('application/json')
       end
     end
 
@@ -99,21 +89,18 @@ RSpec.describe Api::PlayListsController, type: :controller do
       it 'returns an unprocessable_entity response' do
         put :update, params: {id: play_list.id, play_list: {name: nil} }
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to eq('application/json')
       end
     end
   end
 
   describe 'DELETE #destroy' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      delete :destroy, params: {id: play_list.id}
-      expect(response).to have_http_status(:unauthorized)
-    end
+
+    let(:params) {{id: play_list.id}}
+    it_behaves_like "needs authentication", :delete, :destroy
 
     it 'destroys the requested play_list' do
       expect {
-        delete :destroy, params: {id: play_list.id}
+        delete :destroy, params: params
       }.to change(PlayList, :count).by(-1)
     end
   end
@@ -121,6 +108,9 @@ RSpec.describe Api::PlayListsController, type: :controller do
   describe 'POST #add_mp3' do
 
     let(:mp3) { create(:mp3) }
+
+    let(:params) {{id: play_list.id, mp3: { mp3_id: mp3.id}}}
+    it_behaves_like "needs authentication", :post, :add_mp3
 
     it 'returns invalid login without authentication' do
       allow(request.env['warden']).to receive(:authenticate!).and_call_original
@@ -140,12 +130,12 @@ RSpec.describe Api::PlayListsController, type: :controller do
 
     it 'adds mp3 from play_list' do
       expect {
-        post :add_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
+        post :add_mp3, params: params
       }.to change(play_list.mp3s, :count).by(1)
     end
 
     it 'returns a success response' do
-      post :add_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
+      post :add_mp3, params: params
       expect(response).to have_http_status(:ok)
     end
   end
@@ -153,16 +143,13 @@ RSpec.describe Api::PlayListsController, type: :controller do
   describe 'POST #remove_mp3' do
 
     let(:mp3) { create(:mp3) }
+    let(:params) {{id: play_list.id, mp3: { mp3_id: mp3.id}}}
 
     before(:each) do
-      post :add_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
+      post :add_mp3, params: params
     end
 
-    it 'returns invalid login without authentication' do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      post :remove_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
-      expect(response).to have_http_status(:unauthorized)
-    end
+    it_behaves_like "needs authentication", :post, :remove_mp3
 
     it 'returns 404 if no play_list' do
       post :remove_mp3, params: {id: 'invalid_id', mp3: { mp3_id: mp3.id}}
@@ -176,12 +163,12 @@ RSpec.describe Api::PlayListsController, type: :controller do
 
     it 'removes mp3 from play_list' do
       expect {
-        post :remove_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
+        post :remove_mp3, params: params
       }.to change(play_list.mp3s, :count).by(-1)
     end
 
     it 'returns a success response' do
-      post :remove_mp3, params: {id: play_list.id, mp3: { mp3_id: mp3.id}}
+      post :remove_mp3, params: params
       expect(response).to have_http_status(:ok)
     end
   end

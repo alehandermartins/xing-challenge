@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'shared/authentication'
 
 RSpec.describe Api::UsersController, type: :controller do
 
@@ -12,12 +13,9 @@ RSpec.describe Api::UsersController, type: :controller do
   }
 
   describe 'GET #index' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      get :index
-      expect(response).to have_http_status(:unauthorized)
-    end
-
+    
+    it_behaves_like "needs authentication", :get, :index
+    
     it 'returns a success response' do
       get :index
       expect(response).to have_http_status(:ok)
@@ -25,14 +23,12 @@ RSpec.describe Api::UsersController, type: :controller do
   end
 
   describe 'GET #show' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      get :show, params: {id: user.to_param}
-      expect(response).to have_http_status(:unauthorized)
-    end
-
+    
+    let(:params){ {id: user.to_param} }
+    it_behaves_like "needs authentication", :get, :show
+    
     it 'returns a success response' do
-      get :show, params: {id: user.to_param}
+      get :show, params: params
       expect(response).to have_http_status(:ok)
     end
   end
@@ -57,7 +53,6 @@ RSpec.describe Api::UsersController, type: :controller do
         post :create, params: {user: valid_attributes}
 
         expect(response).to have_http_status(:created)
-        expect(response.content_type).to eq('application/json')
       end
     end
 
@@ -65,21 +60,18 @@ RSpec.describe Api::UsersController, type: :controller do
       it 'returns an unprocessable_entity response' do
         post :create, params: {user: {first_name: nil}}
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to eq('application/json')
       end
     end
   end
 
   describe 'PUT #update' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      put :update, params: {id: user.id, user: { first_name: 'new name' }}
-      expect(response).to have_http_status(:unauthorized)
-    end
+
+    let(:params) {{id: user.id, user: { first_name: 'new name' }}}
+    it_behaves_like "needs authentication", :put, :update
 
     context 'with valid params' do
       it 'updates the requested user' do
-        put :update, params: {id: user.id, user: { first_name: 'new name' }}
+        put :update, params: params
         user.reload
         expect(user.first_name).to eq ('new name')
       end
@@ -87,7 +79,6 @@ RSpec.describe Api::UsersController, type: :controller do
       it 'returns a success response' do
         put :update, params: {id: user.id, user: user.attributes}
         expect(response).to have_http_status(:ok)
-        expect(response.content_type).to eq('application/json')
       end
     end
 
@@ -95,21 +86,18 @@ RSpec.describe Api::UsersController, type: :controller do
       it 'returns an unprocessable_entity response' do
         put :update, params: {id: user.id, user: {first_name: nil} }
         expect(response).to have_http_status(:unprocessable_entity)
-        expect(response.content_type).to eq('application/json')
       end
     end
   end
 
   describe 'DELETE #destroy' do
-    it "returns invalid login without authentication" do
-      allow(request.env['warden']).to receive(:authenticate!).and_call_original
-      delete :destroy, params: {id: user.id}
-      expect(response).to have_http_status(:unauthorized)
-    end
+    
+    let(:params) {{id: user.id}}
+    it_behaves_like "needs authentication", :delete, :destroy
 
     it 'destroys the requested user' do
       expect {
-        delete :destroy, params: {id: user.id}
+        delete :destroy, params: params
       }.to change(User, :count).by(-1)
     end
   end
