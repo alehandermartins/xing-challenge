@@ -41,7 +41,7 @@ module Api
         @play_list.mp3s << @mp3
         render status: 200
       else
-        render :text => "404 Not found", :status => 404
+        render status: 404
       end
     end
 
@@ -50,7 +50,7 @@ module Api
         @play_list.mp3s.delete(@mp3)
         render status: 200
       else
-        render :text => "404 Not found", :status => 404
+        render status: 404
       end
     end
 
