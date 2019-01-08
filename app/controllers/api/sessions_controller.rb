@@ -1,3 +1,4 @@
+require "./lib/modules/jwt_wrapper"
 module Api
   class SessionsController < ApiController
 
