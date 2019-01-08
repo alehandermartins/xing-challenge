@@ -4,6 +4,7 @@ require 'csv'
 describe "rake import_data", type: :task do
 
   let(:test_file) { "data_test" }
+  let(:importer) { double('ImporterService') }
 
   context "user" do
 
@@ -12,7 +13,8 @@ describe "rake import_data", type: :task do
     end
 
     it "runs gracefully with no subscribers" do
-      expect(ImporterHelper).to receive(:import).with(test_file, User)
+      expect(ImporterService).to receive(:new).with(test_file, User).and_return(importer)
+      expect(importer).to receive(:call)
       Rake::Task["import_data:user"].invoke(test_file)
     end
   end
@@ -24,7 +26,8 @@ describe "rake import_data", type: :task do
     end
 
     it "runs gracefully with no subscribers" do
-      expect(ImporterHelper).to receive(:import).with(test_file, Mp3)
+      expect(ImporterService).to receive(:new).with(test_file, Mp3).and_return(importer)
+      expect(importer).to receive(:call)
       Rake::Task["import_data:mp3"].invoke(test_file)
     end
   end
@@ -36,7 +39,8 @@ describe "rake import_data", type: :task do
     end
 
     it "runs gracefully with no subscribers" do
-      expect(ImporterHelper).to receive(:import).with(test_file, PlayList)
+      expect(ImporterService).to receive(:new).with(test_file, PlayList).and_return(importer)
+      expect(importer).to receive(:call)
       Rake::Task["import_data:play_list"].invoke(test_file)
     end
   end
